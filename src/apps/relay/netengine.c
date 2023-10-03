@@ -31,8 +31,7 @@
 #include "mainrelay.h"
 
 //////////// Backward compatibility with OpenSSL 1.0.x //////////////
-#if (OPENSSL_VERSION_NUMBER < 0x10100001L ||                                                                           \
-     (defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER <= 0x3040000fL))
+#if (OPENSSL_VERSION_NUMBER < 0x10100001L || defined LIBRESSL_VERSION_NUMBER)
 #define SSL_CTX_up_ref(ctx) CRYPTO_add(&(ctx)->references, 1, CRYPTO_LOCK_SSL_CTX)
 #endif
 
@@ -264,6 +263,8 @@ static void del_alt_server(const char *saddr, int default_port, turn_server_addr
           addr_to_string(&addr, s);
           TURN_LOG_FUNC(TURN_LOG_LEVEL_INFO, "Alternate server removed: %s\n", s);
         }
+
+        del_alt_server(saddr, default_port, list);
       }
     }
 

@@ -43,7 +43,10 @@
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
 #endif
 
-#if (!defined OPENSSL_VERSION_1_1_1)
+#if (defined LIBRESSL_VERSION_NUMBER && OPENSSL_VERSION_NUMBER == 0x20000000L)
+#undef OPENSSL_VERSION_NUMBER
+#define OPENSSL_VERSION_NUMBER 0x1000107FL
+#elif (!defined OPENSSL_VERSION_1_1_1)
 #define OPENSSL_VERSION_1_1_1 0x10101000L
 #endif
 
@@ -1679,20 +1682,22 @@ void generate_aes_128_key(char *filePath, unsigned char *returnedKey) {
   int part;
   FILE *fptr;
   char key[16];
-  turn_srandom();
+  struct timespec times;
+  clock_gettime(CLOCK_REALTIME, &times);
+  srand(times.tv_nsec);
 
   for (i = 0; i < 16; i++) {
     part = (rand() % 3);
     if (part == 0) {
-      key[i] = (turn_random() % 10) + 48;
+      key[i] = (rand() % 10) + 48;
     }
 
     else if (part == 1) {
-      key[i] = (turn_random() % 26) + 65;
+      key[i] = (rand() % 26) + 65;
     }
 
     else if (part == 2) {
-      key[i] = (turn_random() % 26) + 97;
+      key[i] = (rand() % 26) + 97;
     }
   }
   fptr = fopen(filePath, "w");
@@ -3074,11 +3079,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (use_web_admin && turn_params.no_tls) {
-    TURN_LOG_FUNC(TURN_LOG_LEVEL_WARNING, "CONFIG: WARNING: web-admin support not compatible witn --no-tls option.\n");
-    use_web_admin = 0;
-  }
-
   openssl_setup();
 
   int local_listeners = 0;
@@ -3528,7 +3528,7 @@ static void set_ctx(SSL_CTX **out, const char *protocol, const SSL_METHOD *metho
 
   if (!(turn_params.cipher_list[0])) {
     strncpy(turn_params.cipher_list, DEFAULT_CIPHER_LIST, TURN_LONG_STRING_SIZE);
-#if defined(DEFAULT_CIPHERSUITES)
+#if TLSv1_3_SUPPORTED
     strncat(turn_params.cipher_list, ":", TURN_LONG_STRING_SIZE - strlen(turn_params.cipher_list));
     strncat(turn_params.cipher_list, DEFAULT_CIPHERSUITES, TURN_LONG_STRING_SIZE - strlen(turn_params.cipher_list));
 #endif

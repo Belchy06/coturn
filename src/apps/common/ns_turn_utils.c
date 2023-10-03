@@ -49,7 +49,7 @@
 
 #include <signal.h>
 
-#if !defined(WINDOWS) && !defined(__CYGWIN__) && !defined(__CYGWIN32__) && !defined(__CYGWIN64__)
+#if !defined(WINDOWS)
 #include <sys/syscall.h>
 #include <unistd.h>
 #ifdef SYS_gettid
@@ -359,7 +359,7 @@ static void sighup_callback_handler(int signum) {
 
 static void set_rtpfile(void) {
   if (to_reset_log_file) {
-    TURN_LOG_FUNC(TURN_LOG_LEVEL_DEBUG, "%s: resetting the log file\n", __FUNCTION__);
+    printf("%s: resetting the log file\n", __FUNCTION__);
     reset_rtpprintf();
     to_reset_log_file = 0;
   }
